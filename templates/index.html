@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gradient-to-br from-blue-50 to-cyan-50 min-h-screen">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaGuard AI • Smart Water Quality</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'water': {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #d1d5db;
+            background-color: white;
+            transition: all 0.2s;
+        }
+        
+        .input-field:focus {
+            border-color: #0ea5e9;
+            outline: none;
+            box-shadow: 0 0 0 2px #bae6fd;
+        }
+        /* Custom scrollbar for chat */
+        
+        #chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #chat-box::-webkit-scrollbar-thumb {
+            background-color: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-water-600 to-cyan-600 bg-clip-text text-transparent">
+                AquaGuard AI
+            </h1>
+            <p class="mt-3 text-lg text-gray-600">Intelligent Real-time Water Quality Monitoring & Prediction</p>
+            <p class="text-sm text-gray-500 mt-1">Powered by IBM Granite • <span id="current-time" class="font-medium"></span></p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-10 border border-water-100">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Current Water Readings</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">pH Level</label>
+                    <input type="number" id="pH" step="0.1" placeholder="7.0" class="input-field" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Turbidity (NTU)</label>
+                    <input type="number" id="Turbidity" step="0.1" placeholder="3.5" class="input-field" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">DO (mg/L)</label>
+                    <input type="number" id="DO" step="0.1" placeholder="6.5" class="input-field" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">BOD (mg/L)</label>
+                    <input type="number" id="BOD" step="0.1" placeholder="2.0" class="input-field" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Temp (°C)</label>
+                    <input type="number" id="Temperature" step="0.1" placeholder="25.0" class="input-field" />
+                </div>
+            </div>
+            <button onclick="submitData()" class="mt-6 w-full sm:w-auto bg-water-600 hover:bg-water-700 text-white font-medium py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                Analyze & Predict
+            </button>
+        </div>
+
+        <!-- Dashboard Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+            <!-- Visualization -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-water-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Quality Forecast (12h)</h2>
+                <div id="current-values" class="mb-6"></div>
+                <div class="relative h-80">
+                    <canvas id="qualityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alerts" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-water-100">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">System Alerts</h2>
+                <div class="space-y-3" id="alerts-content">
+                    <p class="text-gray-500 italic">No data analyzed yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chatbot Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-water-100">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                Ask AquaGuard AI
+                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            </h2>
+            <div id="chat-box" class="h-80 overflow-y-auto mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-4 flex flex-col">
+                <div class="self-start bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-bl-none max-w-[80%]">
+                    Hello! I'm your AI water quality assistant. Ask me about WHO guidelines or the current parameters.
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <input type="text" id="chat-input" placeholder="Is a pH of 8.5 safe?..." class="flex-1 input-field" onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button onclick="sendMessage()" class="bg-water-600 hover:bg-water-700 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-md">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to JS -->
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

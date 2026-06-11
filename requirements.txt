@@ -1,0 +1,24 @@
+# requirements.txt
+# Core web framework
+fastapi>=0.115.0
+uvicorn>=0.30.0                  # ASGI server
+
+# IBM Granite Time Series Foundation Model (TinyTimeMixer)
+tsfm>=0.2.3                      # IBM's official Time Series Foundation Models package
+
+# LangChain + IBM watsonx integration + vector store
+langchain>=0.3.0
+langchain-ibm>=0.2.0             # For watsonx Granite LLMs
+langchain-community>=0.3.0
+chromadb>=0.5.0                  # Simple local vector database
+sentence-transformers>=3.0.0     # For embeddings (all-MiniLM-L6-v2)
+
+# Data handling
+pandas>=2.2.0
+numpy>=1.26.0
+
+# Optional / development tools (recommended)
+python-dotenv>=1.0.0             # For managing .env file (API keys)
+pydantic>=2.8.0                  # Already required by FastAPI, but good to be explicit
+
+# Note: Chart.js and Tailwind are loaded via CDN, so no Python packages needed for them
